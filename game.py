@@ -2,9 +2,8 @@
 This class is the game interface
 """
 from deck import Deck
-from card import Card
+from Card import Card
 from besthand_sorter import Sorter
-from Hand import Categorizer
 from collections import Counter
 import itertools
 import time

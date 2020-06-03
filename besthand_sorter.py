@@ -1,4 +1,4 @@
-from card import *
+from Card import *
 from Hand import *
 import itertools
 

@@ -3,8 +3,7 @@ from itertools import combinations
 from Exception import *
 
 
-
-class Hand:
+class Hand(np.ndarray):
     """
     A class that identifies the Hand Type
 
@@ -18,25 +17,41 @@ class Hand:
     3: Two Pair          2, 1, 3
     2: One Pair          2, 1, 4
     1: High Card         1, 1, 5
+
+    Properties:
+
+    hand_candidates:
+    hand:
+    in_rank_values
+    rank:
+
     """
 
+
+    def __new__(cls, input_array):
+        # Input array is an already formed ndarray instance
+        # We first cast to be our class type
+        obj = np.asarray(input_array).view(cls)
+        # add the new attribute to the created instance
+        # Finally, we must return the newly created object:
+        return obj
+
+
     def __init__(self, cards) -> None:
-        # if len(cards) > 5:
         self.hand_candidates = self.create_hand(cards)
 
         if len(cards) <= 5:
             self.hand = self.create_hand(cards, sort=True)
-#         self._valid_hand(self.hand)
 
             if len(self.hand) == 5:
+                # Assign rank and in rank values of the current hand
                 self.rank, self.in_rank_values = self.assign_rank(self.hand)
             else:
+                # Not a hand of 5 yet
                 self.rank, self.in_rank_values = 0, []
 
-    def create_hand(self, cards, sort=False):
-        # if len(cards) > 5:
-        #     return max(list(map(Hand, combinations(cards, 5)))).hand
 
+    def create_hand(self, cards, sort=False):
         cardlist = np.empty((len(cards),), dtype=object)
         if sort:
             cardlist[:] = sorted(cards)
@@ -44,21 +59,19 @@ class Hand:
             cardlist[:] = cards
         return cardlist
 
-    ### Buggy Don't Need It
-    #     def remove_card(self, card):
-    #         self.hand = self.hand[self.hand != card]
-    @staticmethod
-    @np.vectorize
-    def concatenate(hand_1, hand_2):
-        if isinstance(hand_1, Hand) and isinstance(hand_2, Hand):
-            return Hand(np.append(hand_1.hand_candidates, hand_2.hand_candidates))
-        elif isinstance(hand_1, Hand):
-            return Hand(np.append(hand_1.hand_candidates, hand_2))
-        elif isinstance(hand_2, Hand):
-                # return Hand(max(list(map(Hand, combinations(np.append(hand_1, hand_2.hand), 5)))).hand)
-            return Hand(np.append(hand_1, hand_2.hand_candidates))
-                # return Hand(max(list(map(Hand, combinations(np.append(hand_1.hand, hand_2.hand), 5)))).hand)
-        return Hand(np.append(hand_1, hand_2))
+    # @staticmethod
+    # @np.vectorize
+    # def concatenate(hand_1, hand_2):
+    #     """
+    #     Want to vectorize two hands，typically 2 + 5
+    #     """
+    #     if isinstance(hand_1, Hand) and isinstance(hand_2, Hand):
+    #         return Hand(np.append(hand_1.hand_candidates, hand_2.hand_candidates))
+    #     elif isinstance(hand_1, Hand):
+    #         return Hand(np.append(hand_1.hand_candidates, hand_2))
+    #     elif isinstance(hand_2, Hand):
+    #         return Hand(np.append(hand_1, hand_2.hand_candidates))
+    #     return Hand(np.append(hand_1, hand_2))
 
     @staticmethod
     @np.vectorize
@@ -68,16 +81,15 @@ class Hand:
                 return Hand(max(list(map(Hand, combinations(hand.hand_candidates, 5)))).hand_candidates)
             return hand
         else:
+            # wrong
             if len(hand.hand_candidates) > 5:
-                return Hand(max(list(map(Hand, combinations(hand, 5)))).hand_candidates)
+                return Hand(max(list(map(Hand, combinations(hand.hand_candidates, 5)))).hand_candidates)
             return Hand(hand)
-
 
     def __add__(self, other):
         if isinstance(other, Hand):
             return Hand(np.append(self.hand_candidates, other.hand_candidates))
         else:
-            print(self.hand_candidates)
             return Hand(np.append(self.hand_candidates, other))
 
     def __radd__(self, other):
@@ -87,61 +99,52 @@ class Hand:
             return Hand(np.append(self.hand_candidates, other))
 
     def _valid_hand(self, hand):
-#         if len(hand) > 5:
-#             raise HandException("Hand Size has Exceeded the Limit of 5")
-#         tupled_card = [tuple(card) for card in hand]
-#         if len(tupled_card) != len(list(set(tupled_card))):
-#             raise HandException("Duplicate Cards Found in Hand")
         pass
 
-    ### Helper functions to get hand values
     def _hand_values(self, hand):
-        print(hand)
+        """
+        Helper functions to get hand values
+        """
+
         return sorted([card[0] for card in hand])
 
     def _hand_suits(self, hand):
+        """
+        Helper functions to get hand's suits
+        """
         return sorted([card[1] for card in hand])
 
-    ### Convenient Quick Check
-    """
-    Checks if all five cards are of the same suit
-    True: 5 cards are of the same suit
-    False: 5 cards are of different suit
-    """
-
     def suit_check(self, hand):
+        """
+        Checks if all five cards are of the same suit
+        True: 5 cards are of the same suit
+        False: 5 cards are of different suits
+        """
         if len(np.unique(self._hand_suits(hand))) == 1:
             return True
         return False
 
-    """
-    Checks if the five cards form a straight
-    True: 5 cards form a straight
-    False: 5 cards do not form a straight
-    """
-
     def straight_check(self, hand):
+        """
+        Checks if the five cards form a straight
+        True: 5 cards form a straight
+        False: 5 cards do not form a straight
+        """
         hand_values = self._hand_values(hand)
-        # print(hand_values)
-        # print(type(hand_values))
-        # print(np.arange(hand_values[0], hand_values[0] + 5, 1))
-        # print(hand_values == np.arange(hand_values[0], hand_values[-1] + 1, 1))
-        if hand_values == list(np.arange(hand_values[0], hand_values[0] + 5, 1)) or (
-                hand_values == [2,3,4,5,14]):
+        if hand_values == list(np.arange(hand_values[0], hand_values[0] + 5, 1)) or \
+                (hand_values == [2, 3, 4, 5, 14]):
             return True
         return False
 
-    """
-    Assigns the rank of the hand
-    """
-
     def assign_rank(self, hand):
-
+        """
+        Assigns the rank of the hand
+        """
         suit_check = self.suit_check(hand)
         straight_check = self.straight_check(hand)
         hand_values = self._hand_values(hand)
 
-        ### We could use straight check and suit check to quickly determine certain card types
+        # We could use straight check and suit check to quickly determine certain card types
         if suit_check and straight_check and hand_values[0] == 10:
             return 10, hand_values
         elif suit_check and straight_check:
@@ -151,7 +154,7 @@ class Hand:
         elif straight_check:
             return 5, hand_values
 
-        ### Assign all other categories
+        # Assign all other categories
         val, count = np.unique(hand_values, return_counts=True)
         return self._rank_dict((max(count), min(count), len(count))), list(val[count.argsort()])
 
@@ -159,8 +162,7 @@ class Hand:
         rank_params_dict = {(4, 1, 2): 8, (3, 2, 2): 7, (3, 1, 3): 4, (2, 1, 3): 3, (2, 1, 4): 2, (1, 1, 5): 1}
         return rank_params_dict[max_min_len]
 
-
-    ### Overwriting Comparison Operators
+    # Overwriting Comparison Operators
     def __eq__(self, other) -> bool:
         if isinstance(other, Hand):
             if self.rank != other.rank:
@@ -183,9 +185,6 @@ class Hand:
 
     def __lt__(self, other) -> bool:
         if isinstance(other, Hand):
-#             print(self.hand, other.hand, 'self other hand')
-#             print(self.in_rank_values, other.in_rank_values, 'self other in rank')
-#             print(self.rank, other.rank, 'self other rank')
             if self.rank < other.rank:
                 return True
             elif self.rank > other.rank:
@@ -234,19 +233,24 @@ class Hand:
         if hand_value_2 == [2, 3, 4, 5, 14]:
             hand_value_2 = [1, 2, 3, 4, 5]
 
+        # Tied
         if hand_value_1 == hand_value_2:
             return 0
 
+        # 1 denotes hand_1 wins
+        # -1 denotes hand_2 wins
         for i in range(-1, -len(hand_value_1) - 1, -1):
             if hand_value_1[i] > hand_value_2[i]:
                 return 1
             elif hand_value_1[i] < hand_value_2[i]:
                 return -1
 
-
     @staticmethod
     @np.vectorize
     def compare(hand_1, hand_2) -> int:
+        """
+        Compare hand type. Otherwise, compare with rank values
+        """
         if hand_1.rank > hand_2.rank:
             return 1
         elif hand_1.rank < hand_2.rank:
@@ -258,9 +262,7 @@ class Hand:
     def multi_compare() -> int:
         pass
 
-
-
-    ### Overwriting String Operation
+    # Overwriting String Operation
     def __str__(self) -> str:
         category_strings = {10: 'Royal Flush', 9: 'Straight Flush', 8: 'Four of a Kind',
                             7: 'Full House', 6: 'Flush', 5: 'Straight', 4: 'Three of a Kind', 3: 'Two Pairs',
@@ -268,22 +270,3 @@ class Hand:
         if len(self.hand_candidates) == 5:
             return category_strings.get(self.rank) + " " + str([card.__str__() for card in self.hand_candidates])
         return str([card.__str__() for card in self.hand_candidates])
-
-    #     def assign_table(self):
-    #         temp = dict()
-    #         for card in self.cardlist:
-    #             if card[0] in temp.keys():
-    #                 temp[card[0]] += 1
-    #             else:
-    #                 temp[card[0]] = 1
-    #         temp = dict(sorted(temp.items(), key=lambda x: x[1], reverse=True))
-
-    #         result = []
-    #         for value in list(sorted(set(temp.values()), reverse=True)):
-    #             l1 = sorted([k for k, v in temp.items() if v == value], reverse=True)
-    #             # print(l1)
-    #             for i in range(len(l1)):
-    #                 for j in range(value):
-    #                     result.append(l1[i])
-    #         return result
-

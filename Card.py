@@ -1,8 +1,9 @@
 from Exception import CardException
-import Exception
+
 suitStrings = {1: 'd', 2: 'c', 3: 'h', 4: 's'}
 numStrings = {2: '2', 3: '3', 4: '4', 5:'5', 6:'6', 7:'7', 8:'8', 9:'9',
                       10: 'T', 11: 'J', 12: 'Q', 13:'K', 14:'A'}
+
 
 class Card(tuple):
     """
@@ -36,7 +37,7 @@ class Card(tuple):
             return (self[0] == other[0]) & (self[1] == other[1])
         return False
     
-    ### Overwrite Comparison Operators
+    # Overwrite Comparison Operators
     
     def __eq__(self, other) -> bool:
         if isinstance(other, tuple):

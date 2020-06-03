@@ -3,6 +3,3 @@ class CardException(Exception):
     
 class HandException(Exception):
     pass
-
-
-    
