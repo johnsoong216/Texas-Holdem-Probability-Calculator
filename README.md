@@ -125,8 +125,8 @@ ht.view_result()
 ```
 
 ## Contributors
-John Song [![GithubLink](https://github.com/johnsoong216)]
-Kent Wu [![GithubLink](https://github.com/Kentwhf)]
+John Song [Github Homepage](https://github.com/johnsoong216)
+Kent Wu [Github Homepage](https://github.com/Kentwhf)
 
 ---
 
