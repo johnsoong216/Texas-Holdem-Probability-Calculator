@@ -32,12 +32,6 @@ Check out **demo.ipynb** to look at all the functions the tool supports or conti
 
 ### Setup
 
-> install directly using pip
-
-```shell
-$ pip install pokeroddscalc
-```
-
 > install from github
 
 ```shell
