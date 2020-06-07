@@ -1,3 +1,2 @@
-# Texas-Hold’em-Probability-Calculator
+# PokerOddsCalc
 
-Copyright by whf 
