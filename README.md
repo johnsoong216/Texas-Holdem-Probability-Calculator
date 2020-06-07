@@ -1,2 +1,256 @@
 # PokerOddsCalc
 
+<p align="left">
+    <a href="https://www.python.org/">
+        <img src="https://ForTheBadge.com/images/badges/made-with-python.svg"
+            alt="python"></a> &nbsp;
+    <a href="https://opensource.org/licenses/MIT">
+        <img src="https://img.shields.io/badge/License-MIT-brightgreen.svg?style=flat-square"
+            alt="MIT license"></a> &nbsp;
+</p>
+
+---
+
+**PokerOddsCalc** is a simple poker hand evaluator that can simulate Texas Hold'em or Omaha poker variants. 
+Most pure poker odds calculators written in Python currently either use a hashtable to store *Card information* as bits to enhance performance or use a strong OOP design, which sacrifices performance. The **development goal** of this project is to achieve relatively high simulation efficiency without the use of a hashtable.
+
+Check out **demo.ipynb** to look at all the functions the tool supports or continue below for some brief examples.
+
+---
+
+## Table of Contents
+
+
+- [Installation](#installation)
+- [Features](#features)
+- [Reference](#reference)
+- [License](#license)
+
+---
+
+## Installation
+
+### Setup
+
+> install directly using pip
+
+```shell
+$ pip install pokeroddscalc
+```
+
+> install from github
+
+```shell
+$ pip install git+https://github.com/johnsoong216/PokerOddsCalc.git
+```
+
+---
+
+## Table of Content
+- [Design](##design)
+- [Implementation](##Implementation)
+- [Example](##Example)
+
+---
+### Design
+
+In order to process data at a fast speed, all Card information are converted into numpy arrays to improve speed.
+Card inputs are taken in the format of number: 23456789TJQKA followed by suit: dcsh. 
+To rank cards, we use a hexidecimal system to assign strength to the card from the most most significant card to the least significant card.
+
+Firstly, we determine if the 5 card combination is suited/straight. This can quickly identify the type of several hands.
+Then we work with numerical values of the cards where 2 to A are represented by integers from 2 to 14. 
+We sort the cards to quickly identify the card type.
+For example
+
+
+
+> First step is to import all availble modules
+
+```python
+import numpy as np
+import pandas as pd
+from pymarkowitz import *
+
+```
+> Read data with pandas. The dataset is available in the **datasets** directory. I will select 15 random stocks with 1000 observations
+
+```python
+
+sp500 = pd.read_csv("datasets/sp500_1990_2000.csv", index_col='DATE').drop(["Unnamed: 0"], axis=1)
+selected = sp500.iloc[:1000, np.random.choice(np.arange(0, sp500.shape[1]), 15, replace=False)]
+
+```
+> Use a ReturnGenerator to compute historical mean return and daily return. Note that there are a variety of options to compute rolling/continuous/discrete returns. Please refer to the **Return.ipynb** jupyter notebook in **demo** directory
+
+```python
+
+ret_generator = ReturnGenerator(selected)
+mu_return = ret_generator.calc_mean_return(method='geometric')
+daily_return = ret_generator.calc_return(method='daily')
+
+```
+> Use a MomentGenerator to compute covariance/coskewness/cokurtosis matrix and beta. Note that there are a variety of options to compute the comoment matrix and asset beta, such as with semivariance, exponential and customized weighting. Normalizing matrices are also supported. Please refer to the **Moment(Covariance).ipynb** jupyter notebook in **demo** directory
+
+```python
+
+benchmark = sp500.iloc[:1000].pct_change().dropna(how='any').sum(axis=1)/sp500.shape[1]
+cov_matrix = mom_generator.calc_cov_mat()
+beta_vec = mom_generator.calc_beta(benchmark)
+
+```
+
+> Construct higher moment matrices by calling
+
+```python
+
+
+coskew_matrix = mom_generator.calc_coskew_mat()
+cokurt_matrix = mom_generator.calc_cokurt_mat()
+coseventh_matrix = mom_generator.calc_comoment_mat(7)
+
+```
+
+> Construct an Optimizer
+
+```python
+
+PortOpt = Optimizer(mu_return, cov_matrix, beta_vec)
+
+```
+
+### Optimization
+
+> Please refer to the **Optimization.ipynb** jupyter notebook in **demo** directory for more detailed explanations.
+
+
+> Set your Objective. 
+
+```python
+
+### Call PortOpt.objective_options() to look at all available objectives
+
+PortOpt.add_objective("min_volatility")
+
+```
+
+> Set your Constraints. 
+
+```python
+
+### Call PortOpt.constraint_options() to look at all available constraints.
+
+PortOpt.add_constraint("weight", weight_bound=(-1,1), leverage=1) # Portfolio Long/Short
+PortOpt.add_constraint("concentration", top_holdings=2, top_concentration=0.5) # Portfolio Concentration
+
+```
+
+> Solve and Check Summary
+
+
+```python
+PortOpt.solve()
+weight_dict, metric_dict = PortOpt.summary(risk_free=0.015, market_return=0.07, top_holdings=2)
+
+
+# Metric Dict Sample Output
+{'Expected Return': 0.085,
+ 'Leverage': 1.0001,
+ 'Number of Holdings': 5,
+ 'Top 2 Holdings Concentrations': 0.5779,
+ 'Volatility': 0.1253,
+ 'Portfolio Beta': 0.7574,
+ 'Sharpe Ratio': 0.5586,
+ 'Treynor Ratio': 0.0924,
+ "Jenson's Alpha": 0.0283}
+ 
+# Weight Dict Sample Output
+{'GIS': 0.309, 'CINF': 0.0505, 'USB': 0.104, 'HES': 0.2676, 'AEP': 0.269}
+
+```
+
+### Simulation
+
+> Simulate and Select the Return Format (Seaborn, Plotly, DataFrame). DataFrame Option will also have the random weights used in each iteration.
+
+> Please refer to the **Simulation.ipynb** jupyter notebook in **demo** directory for more detailed explanations.
+
+
+```python
+
+### Call Portopt.metric_options to see all available options for x, y axis
+
+PortOpt.simulate(x='expected_return', y='sharpe', y_var={"risk_free": 0.02}, iters=10000, weight_bound=(-1, 1), leverage=1, ret_format='sns')
+
+```
+![Sharpe VS Return](https://github.com/johnsoong216/pymarkowitz/blob/master/images/return_vs_sharpe.png)
+
+
+### Backtesting
+
+> Use **pymarkowitz** to construct optimized weights and backtest with real life portfolio.
+In this example, I am using SPDR sector ETFs to construct an optimized portfolio and compare against buy & hold SPY.
+
+
+---
+
+```python
+import bt
+
+data = bt.get('spy, rwr, xlb, xli, xly, xlp, xle, xlf, xlu, xlv, xlk', start='2005-01-01')
+```
+
+> The configurations can be adjusted flexibly, please check backtesting.ipynb in demo directory for more detail. In this case we are minimizing volatility with a capped weight of 25% on each sector.
+```python
+strategy = WeighMarkowitz(Config) #Imported from pymarkowitz.backtester.py
+
+# Personal Strategy
+s1 = bt.Strategy('s1', [bt.algos.RunWeekly(),
+                       bt.algos.SelectAll(),
+                       strategy,
+                       bt.algos.Rebalance()])
+test1 = bt.Backtest(s1, data)
+
+# Buy & Hold
+s2 = bt.Strategy('s2', [bt.algos.RunWeekly(),
+                       bt.algos.SelectAll(),
+                       bt.algos.WeighEqually(),
+                       bt.algos.Rebalance()])
+test2 = bt.Backtest(s2, data[['spy']].iloc[Config.lookback:])
+res = bt.run(test1, test2)
+res.plot()
+```
+![Backtest_Result](https://github.com/johnsoong216/pymarkowitz/blob/master/images/backtest_sector_vs_spy.PNG)
+
+
+---
+
+## Reference
+
+Calculations of **Correlation, Diversifcation & Risk Parity Factors**:
+<br>
+https://investresolve.com/file/pdf/Portfolio-Optimization-Whitepaper.pdf
+
+Calculations for **Sharpe, Sortino, Beta, Treynor, Jenson's Alpha**:
+<br>
+https://www.cfainstitute.org/-/media/documents/support/programs/investment-foundations/19-performance-evaluation.ashx?la=en&hash=F7FF3085AAFADE241B73403142AAE0BB1250B311
+<br>
+https://www.investopedia.com/terms/j/jensensmeasure.asp
+<br>
+https://www.investopedia.com/ask/answers/070615/what-formula-calculating-beta.asp
+<br>
+
+Calculations for **Higher Moment Matrices**:
+<br>
+https://cran.r-project.org/web/packages/PerformanceAnalytics/vignettes/EstimationComoments.pdf
+<br>
+
+
+---
+
+## License
+
+[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
+
+- **[MIT license](http://opensource.org/licenses/mit-license.php)**
+- Copyright 2020 ©
