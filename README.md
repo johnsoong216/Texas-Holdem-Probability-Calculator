@@ -22,8 +22,8 @@ Check out **demo.ipynb** to look at all the functions the tool supports or conti
 
 
 - [Installation](#installation)
-- [Features](#features)
-- [Reference](#reference)
+- [Design](#design)
+- [Example](#example)
 - [License](#license)
 
 ---
@@ -46,12 +46,7 @@ $ pip install git+https://github.com/johnsoong216/PokerOddsCalc.git
 
 ---
 
-## Table of Content
-- [Design](##design)
-- [Example](##Example)
-
----
-### Design
+## Design
 
 In order to process data at a fast speed, all Card information are converted into numpy arrays to improve speed.
 
@@ -79,7 +74,7 @@ We sort the cards to quickly identify the card type.
     - Implementing this design, we can achieve a speed of 5M simulations per second for Hold'em and 1.5M/s for Omaha.
     - Although this is not as fast as certain bitwise methods/hashtable methods, which can achieve a speed north of 10M/s, it is a great improvement over certain OOP designs which are not functionally usable when the flop is not drawn.
 
-### Example
+## Example
 
 > Import Game
 
