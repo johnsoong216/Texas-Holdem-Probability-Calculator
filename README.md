@@ -68,7 +68,7 @@ We sort the cards to quickly identify the card type.
    
 > Second Step
    - We can identify all the card types and we assign an integer value from 1 - 8 to each hand TYPE(1 being High Card and 8 being Straight Flush)
-   - The integer value is calculated as $D_1 * 1, D_2 * 16, D_3 * 16^2, D_4 * 16^3, D_5 * 16^4, TYPE * 16^5$ where $D_i$ is the $i^{th}$ most significant numerical value of the hand. Since the maximum value of any digit is 14, we know that using a hexidecimal system can avoid coalition and successfully assign a unique value to each hand.
+   - The integer value is calculated as $$D_1 * 1, D_2 * 16, D_3 * 16^2, D_4 * 16^3, D_5 * 16^4, TYPE * 16^5$$ where $$D_i$$ is the $$i^{th}$$ most significant numerical value of the hand. Since the maximum value of any digit is 14, we know that using a hexidecimal system can avoid coalition and successfully assign a unique value to each hand.
    
     
 > Third Step
@@ -131,6 +131,7 @@ ht.view_result()
 
 ## Contributors
 John Song [Github Homepage](https://github.com/johnsoong216)
+
 Kent Wu [Github Homepage](https://github.com/Kentwhf)
 
 ---
