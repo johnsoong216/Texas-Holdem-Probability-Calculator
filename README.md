@@ -62,7 +62,7 @@ We sort the cards to quickly identify the card type.
    
 > Second Step
    - We can identify all the card types and we assign an integer value from 1 - 8 to each hand TYPE(1 being High Card and 8 being Straight Flush)
-   - The integer value is calculated as D1 * 1 + D2 * 16 + D3 * 16^2 + D4 * 16^3 + D5 * 16^4 + TYPE * 16^5 where Di is the ith most significant numerical value of the hand. Since the maximum value of any digit is 14, we know that using a hexidecimal system can avoid coalition and successfully assign a unique value to each hand.
+   - The integer value is calculated as D1 * 1 + D2 * 16 + D3 * 16^2 + D4 * 16^3 + D5 * 16^4 + TYPE * 16^5 where Di is the ith least significant numerical value of the hand. Since the maximum value of any digit is 14, we know that using a hexidecimal system can avoid coalition and successfully assign a unique value to each hand.
    
     
 > Third Step
