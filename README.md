@@ -65,16 +65,19 @@ We sort the cards to quickly identify the card type.
    - Then we move the values in terms of the most valuable digit, so AAAAB -> BAAAA
    - Similarly for Three of a Kind there are three formats: AAABC, ABBBC, ABCCC and we can move the values
    
+   
 > Second Step
-    - We can identify all the card types and we assign an integer value from 1 - 8 to each hand TYPE(1 being High Card and 8 being Straight Flush)
-    - The integer value is calculated as $D_1 * 1, D_2 * 16, D_3 * 16^2, D_4 * 16^3, D_5 * 16^4, TYPE * 16^5$ where $D_i$ is the $i^{th}$ most significant numerical value of the hand. Since the maximum value of any digit is 14, we know that using a hexidecimal system can avoid coalition and successfully assign a unique value to each hand.
+   - We can identify all the card types and we assign an integer value from 1 - 8 to each hand TYPE(1 being High Card and 8 being Straight Flush)
+   - The integer value is calculated as $D_1 * 1, D_2 * 16, D_3 * 16^2, D_4 * 16^3, D_5 * 16^4, TYPE * 16^5$ where $D_i$ is the $i^{th}$ most significant numerical value of the hand. Since the maximum value of any digit is 14, we know that using a hexidecimal system can avoid coalition and successfully assign a unique value to each hand.
+   
     
 > Third Step
-    - Assigning a value to a hand can allow for quick comparisons between hand strength, which makes simulation more efficient.
+   - Assigning a value to a hand can allow for quick comparisons between hand strength, which makes simulation more efficient.
+    
     
 > Conclusion
-    - Implementing this design, we can achieve a speed of 5M simulations per second for Hold'em and 1.5M/s for Omaha.
-    - Although this is not as fast as certain bitwise methods/hashtable methods, which can achieve a speed north of 10M/s, it is a great improvement over certain OOP designs which are not functionally usable when the flop is not drawn.
+   - Implementing this design, we can achieve a speed of 5M simulations per second for Hold'em and 1.5M/s for Omaha.
+   - Although this is not as fast as certain bitwise methods/hashtable methods, which can achieve a speed north of 10M/s, it is a great improvement over certain OOP designs which are not functionally usable when the flop is not drawn.
 
 ## Example
 
