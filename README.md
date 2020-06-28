@@ -123,11 +123,6 @@ ht.view_result()
 
 ```
 
-## Contributors
-John Song [Github Homepage](https://github.com/johnsoong216)
-
-Kent Wu [Github Homepage](https://github.com/Kentwhf)
-
 ---
 
 ## License
